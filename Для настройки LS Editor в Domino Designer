@@ -1,0 +1,52 @@
+******************************************************************************************************
+******************************************************************************************************
+Настройка Domino Desiner:
+File -> Preference -> Domino Designer -> LotusScript Editor!
+
+LotusScript Editor -> Comment Templates:
+Design Element, Class, Type:
+%REM
+	Comment:
+%END REM
+
+Function:
+%REM
+	Comment:
+		
+	Parameters:
+		
+	Return:
+		
+%END REM
+
+Sub, Property Set:
+%REM
+	Comment:
+
+	Parameters:
+		
+%END REM
+
+Property Get:
+%REM
+	Comment:
+
+	Parameters:
+		
+	Return:
+		
+%END REM
+
+LotusScript Editor -> Code Templates:
+Design Element:
+Private Const DESIGN_ELEMENT = {}
+
+Sub, Function, Property Get, Property Set:
+	Dim errorFlag As Boolean
+'Обработака ошибки ДЛЯ класса
+'errh: If CORE.isError(errorFlag) Then Call CORE.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+'Обработака ошибки ВНЕ класса
+'errh: If CORE.isError(errorFlag) Then Call CORE.error_(DESIGN_ELEMENT, {}, GetThreadInfo(1), {}) Else On Error GoTo errh
+
+******************************************************************************************************
+******************************************************************************************************

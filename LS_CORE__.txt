@@ -1,28 +1,31 @@
 %REM
-	Comment: Библиотека содержит 1 клас Core__ и 1 переменнюу CORE содержащую экземпляр класса Core__!
+	Comment: Библиотека содержит 1 клас core__ и 1 переменнюу core содержащую экземпляр класса core__!
 %END REM
 Option Public
 Option Declare
 Private Const DESIGN_ELEMENT = {LS_CORE__}
 
 %REM
-	Эта переменная будет содержать экземпляр класса Core__!
+	Эта переменная будет содержать экземпляр класса core__!
 %END REM
-Public CORE As Core__
+Public core As core__
+
 %REM
 	Comment: Подобие функционального класса!
 %END REM
-Public Class Core__
+Public Class core__
 	%REM
 		Если NO_ERRORS_MODE__ = True то ошибки будут генерироваться,
 		иначе их не будет и все проверки ложатся на плечи того, кто использует эту библиотеку.
 	%END REM
-	Private NO_ERRORS_MODE As Boolean			'Метод ERROR__ игнорирует эту переменную!
+	Private NO_ERRORS_MODE As Boolean			'Метод error_ игнорирует эту переменную!
 	Private NO_ERRORS_MODE_BACKUP As Boolean	'Для сброса на предыдущий параметр
+	
 	%REM
-		При DEBUGGER_STOP = True метод ERROR__ сделает STOP. Полезно для дебагера!
+		При DEBUGGER_STOP = True метод error_ сделает STOP. Полезно для дебагера!
 	%END REM
 	Private DEBUGGER_STOP As Boolean
+	
 	%REM
 		Лотусовая сессия
 	%END REM
@@ -33,7 +36,7 @@ Public Class Core__
 	%END REM
 	Property Get getNotesSession As NotesSession
 		Dim errorFlag As Boolean
-errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		If Me.NOTES_SESSION Is Nothing Then Set Me.NOTES_SESSION = New NotesSession
 		Set getNotesSession = Me.NOTES_SESSION
@@ -44,7 +47,7 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Property Get getNoErrorMode As Boolean
 		Dim errorFlag As Boolean
-errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		getNoErrorMode = Me.NO_ERRORS_MODE
 	End Property
@@ -54,7 +57,7 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Property Set setNoErrorMode As Boolean
 		Dim errorFlag As Boolean
-errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Me.NO_ERRORS_MODE_BACKUP = Me.NO_ERRORS_MODE 
 		Me.NO_ERRORS_MODE = setNoErrorMode
@@ -65,7 +68,7 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Sub reSetNoErrorMode
 		Dim errorFlag As Boolean
-errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Me.NO_ERRORS_MODE = Me.NO_ERRORS_MODE_BACKUP
 	End Sub
@@ -75,7 +78,7 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Property Get getDebuggerStop As Boolean
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		getDebuggerStop = Me.DEBUGGER_STOP
 	End Property
@@ -85,7 +88,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Property Set setDebuggerStop As Boolean
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Me.DEBUGGER_STOP = setDebuggerStop
 	End Property
@@ -93,14 +96,14 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%REM
 		Comment: Обработчик ошибок, и режим работы "БЕЗ ОШИБОК" игнорируется!
 	%END REM
-	Sub Error_(DESIGN_ELEMENT_ As String, className As String, designSubElement As String, additionToError As String)	
+	Sub error_(DESIGN_ELEMENT_ As String, className As String, designSubElement As String, additionToError As String)	
 		If Me.DEBUGGER_STOP Then
 			Dim Err_ As String
 			Dim Erl_ As String
-			Dim Error_ As String
+			Dim error_ As String
 			Err_ = CStr(Err)
 			Erl_ = CStr(Erl)
-			Error_ = CStr(Error)
+			error_ = CStr(Error)
 			Stop
 		End If
 		
@@ -124,7 +127,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM 
 	Private Function checkDocument(document As Variant) As Boolean
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		checkDocument = False
 		If TypeName(document) <> {NOTESDOCUMENT} Then	'Передали не документ
@@ -150,7 +153,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function documentIsNew(document As NotesDocument) As Boolean
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		If Not Me.checkValue(document) Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'document' пуст!}	
@@ -167,7 +170,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function checkValue(value As Variant) As Boolean
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		checkValue = False
 		Select Case TypeName(value)
@@ -207,7 +210,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getDatabase(dbServer As String, dbFilePath As String) As NotesDatabase
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Set getDatabase = Nothing
 		If Not Me.checkValue(dbFilePath) Then
@@ -230,7 +233,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getCurrentDatabase As NotesDatabase
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Set getCurrentDatabase = Me.getNotesSession.Currentdatabase
 	End Function
@@ -240,7 +243,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getDocumentsByView(dbServer As String, dbFilePath As String, view As String, conditionArray As Variant, exactMatch As Boolean) As NotesDocumentCollection
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Set getDocumentsByView = Nothing
 		Dim tDB As NotesDatabase
@@ -256,7 +259,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getDocumentsByViewInDB(database As NotesDatabase, view As String, conditionArray As Variant, exactMatch As Boolean) As NotesDocumentCollection
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Set getDocumentsByViewInDB = Nothing
 		If Not Me.checkValue(database) Then 
@@ -278,7 +281,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getDocumetByUNID(dbServer As String, dbFilePath As String, UNID As String) As NotesDocument
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Set getDocumetByUNID = Nothing
 		Dim tDB As NotesDatabase
@@ -294,7 +297,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getDocumetByUNIDInDB(database As NotesDatabase, UNID As String) As NotesDocument
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Set getDocumetByUNIDInDB = Nothing
 		If Not Me.checkValue(UNID) Then
@@ -318,7 +321,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function canCreateDocuments As Boolean
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 
 		canCreateDocuments = Me.canCreateDocumentsExt(Me.getCurrentDatabase(), Me.getNotesSession.Username)
 	End Function
@@ -328,12 +331,12 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function canCreateDocumentsExt(database As NotesDatabase, userName As String) As Boolean
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
-		If Not me.checkValue(userName) Then
+		If Not Me.checkValue(userName) Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'userName' пуст!}
 		End If
-		If Not me.checkValue(database) Then
+		If Not Me.checkValue(database) Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
 		End If
 		canCreateDocumentsExt = (database.Queryaccessprivileges(userName) And DBACL_CREATE_DOCUMENTS)
@@ -344,7 +347,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function canDeleteDocuments As Boolean
 		Dim errorFlag As Boolean
-errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 
 		canDeleteDocuments = Me.canDeleteDocumentsExt(Me.getCurrentDatabase(), Me.getNotesSession.Username)
 	End Function
@@ -354,12 +357,12 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function canDeleteDocumentsExt(database As NotesDatabase, userName As String) As Boolean
 		Dim errorFlag As Boolean
-errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
-		If Not me.checkValue(userName) Then
+		If Not Me.checkValue(userName) Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'userName' пуст!}
 		End If
-		If Not me.checkValue(database) Then
+		If Not Me.checkValue(database) Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
 		End If
 		canDeleteDocumentsExt = (database.Queryaccessprivileges(userName) And DBACL_DELETE_DOCUMENTS)
@@ -370,17 +373,17 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getValuesByDocCollection(collection As NotesDocumentCollection, itemName As String) As Variant
 		Dim errorFlag As Boolean
-errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		ReDim tRes(0) As Variant
 		Dim Ind As Integer
 		Ind = 0
 		getValuesByDocCollection = tRes
 
-		If Not me.checkValue(collection) Then
+		If Not Me.checkValue(collection) Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'collection' пуст!}
 		End If
-		If Not me.checkValue(itemName) Then
+		If Not Me.checkValue(itemName) Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'itemName' пуст!}
 		End If
 		
@@ -407,14 +410,14 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getUNIDsByDocCollection(collection As NotesDocumentCollection) As Variant
 		Dim errorFlag As Boolean
-errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		ReDim tRes(0) As Variant
 		Dim Ind As Integer
 		Ind = 0
 		getUNIDsByDocCollection = tRes
 
-		If Not me.checkValue(collection) Then
+		If Not Me.checkValue(collection) Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'collection' пуст!}
 		End If
 		
@@ -439,7 +442,7 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getDocumentResponses(doc As Variant) As NotesDocumentCollection
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 
 		If Me.checkDocument(doc) Then
 			Dim tList List As String
@@ -455,7 +458,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getCoollectionOfDocumentsAndResponses(documents As Variant) As NotesDocumentCollection
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Dim tCol As NotesDocumentCollection
 		Set tCol = Me.getNotesSession.Currentdatabase.Search({}, Nothing, 0)
@@ -507,7 +510,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function getDocumentResponsesExt(doc As Variant, unids List As String, mainDocUnid As String) As NotesDocumentCollection
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		If Me.checkDocument(doc) Then
 			Dim tDB As NotesDatabase
@@ -552,7 +555,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function createDocument(formName As String, parentDocument As NotesDocument) As NotesDocument
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Set createDocument = Me.createDocumentInDB(Me.getCurrentDatabase(), formName, parentDocument)
 	End Function
@@ -562,7 +565,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function createDocumentExt(server As String, filePath As String, formName As String, parentDocument As NotesDocument) As NotesDocument
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		 
 		Set createDocumentExt = Nothing
 		Dim tDB As NotesDatabase
@@ -578,7 +581,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function createDocumentInDB(database As NotesDatabase, formName As String, parentDocument As NotesDocument) As NotesDocument
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Set createDocumentInDB = Nothing
 		If Not Me.checkValue(formName) Then 
@@ -604,7 +607,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Sub stampDocumentsAndResponses(documents As Variant, itemName As String, itemValue As Variant)
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Dim tCol As NotesDocumentCollection
 		Set tCol = Me.getCoollectionOfDocumentsAndResponses(documents)
@@ -617,7 +620,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Sub deleteDocuments(documents As Variant)
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 
 		Dim tCol As NotesDocumentCollection
 		Set tCol = Me.getCoollectionOfDocumentsAndResponses(documents)
@@ -631,14 +634,14 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Sub markAsDeleted(documents As Variant)
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Dim tCol As NotesDocumentCollection
 		Set tCol = Me.getCoollectionOfDocumentsAndResponses(documents)
 		
 		If Me.checkValue(tCol) Then 
 			Dim tDoc As NotesDocument
-			Set tDoc = me.getCurrentDatabase().Createdocument()
+			Set tDoc = Me.getCurrentDatabase().Createdocument()
 			Call tDoc.Replaceitemvalue({$DELETED__}, {})
 			Call tDoc.Replaceitemvalue({$DELETED_BY__}, Me.getNotesSession.Username)
 			Call tDoc.Replaceitemvalue({$DELETED_DATE__}, Now)
@@ -651,7 +654,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Sub unMarkAsDeleted(documents As Variant)
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 
 		Dim tCol As NotesDocumentCollection
 		Set tCol = Me.getCoollectionOfDocumentsAndResponses(documents)
@@ -674,7 +677,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function documentIsMarkedAsDeleted(document As NotesDocument) As Boolean
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		documentIsMarkedAsDeleted = document.Hasitem({$DELETED__})
 	End Function
@@ -687,7 +690,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function documentHasDublicate(dbServer As String, dbFilePath As String, viewName As String, var As Variant, сompleteCoincidence As Boolean, mainDoc As NotesDocument) As Boolean
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		documentHasDublicate = False
 		Dim tDB As NotesDatabase
@@ -706,12 +709,12 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function documentHasDublicateInDB(database As NotesDatabase, viewName As String, var As Variant, сompleteCoincidence As Boolean, mainDoc As NotesDocument) As Boolean
 		Dim errorFlag As Boolean
-errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		documentHasDublicateInDB = False
 		If viewName = {} Then Exit Function
 		If IsObject(var) Then Exit Function
-		If Not me.checkValue(database) Then
+		If Not Me.checkValue(database) Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
 		End If
 		Dim tCol As NotesDocumentCollection
@@ -733,7 +736,7 @@ errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function documentIsModyfied(dbServer As String, dbFilePath As String, viewName As String, doc As NotesDocument) As Boolean
 		Dim errorFlag As Boolean
-errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 
 		documentIsModyfied = False
 		Dim tDB As NotesDatabase
@@ -750,11 +753,11 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function documentIsModyfiedInDB(database As NotesDatabase, viewName As String, doc As NotesDocument) As Boolean
 		Dim errorFlag As Boolean
-errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If Me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 
 		documentIsModyfiedInDB = False
 		If doc Is Nothing Then Exit Function
-		If Not me.checkValue(database) Then
+		If Not Me.checkValue(database) Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
 		End If
 		Dim tCol As NotesDocumentCollection
@@ -784,7 +787,7 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%END REM
 	Function createMail(body As Variant, subject As Variant, sendto As Variant) As NotesDocument
 		Dim errorFlag As Boolean
-errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If core.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Set createMail = Me.createMailExt(body, subject, sendto, {}, {})
 	End Function
@@ -794,13 +797,13 @@ errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(
 	%END REM
 	Function createMailExt(body As Variant, subject As Variant, sendTo As Variant, copyTo As Variant, blindCopy As Variant) As NotesDocument
 		Dim errorFlag As Boolean
-errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+errh: If core.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
 		Dim tBox As NotesDatabase 
 		Dim tDoc As NotesDocument
 		Dim tRTIitem As NotesRichTextItem
 		
-		Set tBox = Me.getDatabase(CORE.getCurrentDatabase().Server, {Mail.box})
+		Set tBox = Me.getDatabase(core.getCurrentDatabase().Server, {Mail.box})
 		
 		If Not tBox.IsOpen Then
 			If Me.getNoErrorMode Then Exit Function Else Error 5000, {Ошибка при записи сообщения в Mail.box}
@@ -809,7 +812,7 @@ errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(
 		Set tDoc=tBox.createdocument
 		
 		Call tDoc.ReplaceItemValue({Form}, {Memo})
-		Call tDoc.ReplaceItemValue({From}, CORE.getNotesSession.Username)
+		Call tDoc.ReplaceItemValue({From}, core.getNotesSession.Username)
 		Call tDoc.ReplaceItemValue({Subject}, subject)
 		
 		Call tDoc.ReplaceItemValue({SendTo}, sendTo)	
@@ -825,22 +828,24 @@ errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(
 		
 		Call tDoc.ReplaceItemValue({Recipients}, Evaluate({@Unique(@Trim(SendTo:CopyTo:BlindCopyTo))}, tDoc))	
 		
-		If Not CORE.checkValue(tDoc.getItemValue({Recipients})) Then Exit Function
+		If Not core.checkValue(tDoc.getItemValue({Recipients})) Then Exit Function
 		
 		Set tRTIitem = New NotesRichTextItem (tDoc, "Body")
 		If TypeName(body) = "NOTESRICHTEXTITEM" Then Call tRTIitem.AppendRTItem (body) Else Call tRTIitem.AppendText (body)
 		Set createMailExt = tDoc
 	End Function
 End Class
+
 Sub Initialize	
 	%REM
-		Инициируем библиотеку создавая экземпляр класса Core__!
+		Инициируем библиотеку создавая экземпляр класса core__!
 	%END REM
-	If CORE Is Nothing Then Set CORE = New Core__
+	If core Is Nothing Then Set core = New core__
 End Sub
+
 Sub Terminate
 	%REM
-		Уничтожаем объект CORE если он был создан!
+		Уничтожаем объект core если он был создан!
 	%END REM
-	If Not CORE Is Nothing Then Delete CORE
+	If Not core Is Nothing Then Delete core
 End Sub
