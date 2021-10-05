@@ -1,0 +1,846 @@
+%REM
+	Comment: Библиотека содержит 1 клас Core__ и 1 переменнюу CORE содержащую экземпляр класса Core__!
+%END REM
+Option Public
+Option Declare
+Private Const DESIGN_ELEMENT = {LS_CORE__}
+
+%REM
+	Эта переменная будет содержать экземпляр класса Core__!
+%END REM
+Public CORE As Core__
+%REM
+	Comment: Подобие функционального класса!
+%END REM
+Public Class Core__
+	%REM
+		Если NO_ERRORS_MODE__ = True то ошибки будут генерироваться,
+		иначе их не будет и все проверки ложатся на плечи того, кто использует эту библиотеку.
+	%END REM
+	Private NO_ERRORS_MODE As Boolean			'Метод ERROR__ игнорирует эту переменную!
+	Private NO_ERRORS_MODE_BACKUP As Boolean	'Для сброса на предыдущий параметр
+	%REM
+		При DEBUGGER_STOP = True метод ERROR__ сделает STOP. Полезно для дебагера!
+	%END REM
+	Private DEBUGGER_STOP As Boolean
+	%REM
+		Лотусовая сессия
+	%END REM
+	Private NOTES_SESSION As NotesSession
+	
+	%REM
+		Comment: Получаем лотусовую сессию. Если она не инициирована то делаем это!
+	%END REM
+	Property Get getNotesSession As NotesSession
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If Me.NOTES_SESSION Is Nothing Then Set Me.NOTES_SESSION = New NotesSession
+		Set getNotesSession = Me.NOTES_SESSION
+	End Property
+	
+	%REM
+		Comment: Включен ли режим работы "БЕЗ ОШИБОК"
+	%END REM
+	Property Get getNoErrorMode As Boolean
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		getNoErrorMode = Me.NO_ERRORS_MODE
+	End Property
+	
+	%REM
+		Comment: Изменяем режим работы "БЕЗ ОШИБОК"
+	%END REM
+	Property Set setNoErrorMode As Boolean
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Me.NO_ERRORS_MODE_BACKUP = Me.NO_ERRORS_MODE 
+		Me.NO_ERRORS_MODE = setNoErrorMode
+	End Property
+	
+		%REM
+		Comment: Восстанавливает режим работы без ошибок на последний
+	%END REM
+	Sub reSetNoErrorMode
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Me.NO_ERRORS_MODE = Me.NO_ERRORS_MODE_BACKUP
+	End Sub
+	
+	%REM
+		Comment: Сатус флага остановки для дебаггера
+	%END REM
+	Property Get getDebuggerStop As Boolean
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		getDebuggerStop = Me.DEBUGGER_STOP
+	End Property
+	
+	%REM
+		Comment: Изменяем флаг остановки для дебаггера
+	%END REM
+	Property Set setDebuggerStop As Boolean
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Me.DEBUGGER_STOP = setDebuggerStop
+	End Property
+	
+	%REM
+		Comment: Обработчик ошибок, и режим работы "БЕЗ ОШИБОК" игнорируется!
+	%END REM
+	Sub Error_(DESIGN_ELEMENT_ As String, className As String, designSubElement As String, additionToError As String)	
+		If Me.DEBUGGER_STOP Then
+			Dim Err_ As String
+			Dim Erl_ As String
+			Dim Error_ As String
+			Err_ = CStr(Err)
+			Erl_ = CStr(Erl)
+			Error_ = CStr(Error)
+			Stop
+		End If
+		
+		Dim where As String
+		If className <> {} Then where = className & { -> }
+		If designSubElement <> {} Then where = where & designSubElement & { -> }
+		If where <> {} Then where = where & {line №} & Erl & {:} Else where = {Line №} & Erl & {:}
+		
+		Dim error__ As String
+		If additionToError <> {} Then error__ = Error & additionToError Else error__ = Error
+		
+		Error Err, where & Chr(10) & error__
+	End Sub	
+
+	%REM
+		Comment: Проверка доекумента на:
+				 1 - Is Valid
+				 2 - Is Deleted
+				 3 - NotesDocument.Universalid <> ""
+				 4 - IsArray(NotesDocument.Items)
+	%END REM 
+	Private Function checkDocument(document As Variant) As Boolean
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		checkDocument = False
+		If TypeName(document) <> {NOTESDOCUMENT} Then	'Передали не документ
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {TypeName(document) <> NOTESDOCUMENT}
+		End If
+		If Not document.Isvalid Then					'Документ не валиден
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {DOCUMENT.Isvalid = False!}
+		End If	
+		If document.Isdeleted Then						'Документ удалён
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {DOCUMENT.Isdeleted = True!}
+		End If
+		If document.Universalid = {} Then				'Universalid пустой
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {(DOCUMENT.Universalid = "") = True!}
+		End If
+		If Not IsArray(document.Items) Then				'Нет полей
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {IsArray(DOCUMENT.Items) = False!}
+		End If
+		checkDocument = True
+	End Function
+	
+	%REM
+		Comment: Проверка на признак того, что документ новый и не сохранен ни разу
+	%END REM
+	Function documentIsNew(document As NotesDocument) As Boolean
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If Not Me.checkValue(document) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'document' пуст!}	
+		End If
+		Dim tVal As Variant
+		tVal = Evaluate ({@NoteID}, document)
+		documentIsNew = (tVal(0) = "NT00000000")
+	End Function
+	
+	%REM
+		Comment: Проверка значения на содержание какого либо значения. Вернет True если аргумент не пуст и значение не равно 0 и ""!
+				 В массиве проверяется нижняя граница. Если в массиве 1 элемент то он проверятся рекурсивно, иначе вернет True.
+				 В листе проверяется первое значение рекурсивно.
+	%END REM
+	Function checkValue(value As Variant) As Boolean
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		checkValue = False
+		Select Case TypeName(value)
+			Case {EMPTY}, {NULL}, {ERROR}, {UNKNOWN}:
+				Exit Function
+			Case {BYTE}, {INTEGER}, {CURRENCY}, {LONG}, {SINGLE}, {DOUBLE}:
+				If Not IsNumeric(value) Then Exit Function
+			Case {STRING}:
+				If value = {} Then Exit Function
+			Case {OBJECT}, {NOTESDATABASE}, {NOTESVIEW}, {NOTESDOCUMENTCOLLECTION}:			
+				If value Is Nothing Then Exit Function
+			Case {NOTESDOCUMENT}:
+				If value Is Nothing Then Exit Function
+				Dim noErr As Boolean
+				noErr = Me.getNoErrorMode
+				Me.setNoErrorMode = True
+				If Not Me.checkDocument(value) Then Exit Function
+				Me.setNoErrorMode = noErr
+			Case Else
+				If IsArray(value) Then
+					If UBound(value) = 0 Then 
+						If Not Me.checkValue(value(0)) Then Exit Function
+					End If
+				ElseIf IsList(value) Then
+					ForAll v In value
+						If Not Me.checkValue(v) Then Exit Function Else Exit ForAll
+					End ForAll
+				Else
+					If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не корректный тип 'VALUE': } & TypeName(value) & {.} 
+				End If
+		End Select
+		checkValue = True
+	End Function
+	
+	%REM
+		Comment: Получение базы данных
+	%END REM
+	Function getDatabase(dbServer As String, dbFilePath As String) As NotesDatabase
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set getDatabase = Nothing
+		If Not Me.checkValue(dbFilePath) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'dbFilePath' пуст!}
+		End If
+		Dim tDB As NotesDatabase
+		Set tDB = Me.getNotesSession.Getdatabase(dbServer, dbFilePath, 0)
+		If Not Me.checkValue(tDB) Then
+			If Me.checkValue(dbServer) Then 
+				If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не удалось получить базу: } & dbFilePath & {.}				
+			Else
+				If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не удалось получить базу: } & dbServer & {!!} & dbFilePath & {.}
+			End If
+		End If 
+		Set getDatabase = tDB
+	End Function
+	
+	%REM
+		Comment: Возвращает текущую базу
+	%END REM
+	Function getCurrentDatabase As NotesDatabase
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set getCurrentDatabase = Me.getNotesSession.Currentdatabase
+	End Function
+	
+	%REM
+		Comment: Получение коллекции документов из представления
+	%END REM
+	Function getDocumentsByView(dbServer As String, dbFilePath As String, view As String, conditionArray As Variant, exactMatch As Boolean) As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set getDocumentsByView = Nothing
+		Dim tDB As NotesDatabase
+		Set tDB = Me.getDatabase(dbServer, dbFilePath)
+		If Not Me.checkValue(tDB) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не удалось получить базу: } & dbServer & {!!} & dbFilePath & {.}
+		End If
+		Set getDocumentsByView = getDocumentsByViewInDB(tDB, view, conditionArray, exactMatch)
+	End Function
+	
+	%REM
+		Comment: Получение коллекции документов из представления!
+	%END REM
+	Function getDocumentsByViewInDB(database As NotesDatabase, view As String, conditionArray As Variant, exactMatch As Boolean) As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set getDocumentsByViewInDB = Nothing
+		If Not Me.checkValue(database) Then 
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
+		End If
+		If Not Me.checkValue(conditionArray) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'conditionArray' пуст!}	
+		End If
+		Dim tView As NotesView
+		Set tView = database.GetView(view)
+		If Not Me.checkValue(tView) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не найдено представление '} & view & {' в базе } & database.Server & {!!} & database.Filepath & {.}	
+		End If
+		Set getDocumentsByViewInDB = tView.Getalldocumentsbykey(conditionArray, exactMatch)
+	End Function
+	
+	%REM
+		Comment: Получение документа по UNID
+	%END REM
+	Function getDocumetByUNID(dbServer As String, dbFilePath As String, UNID As String) As NotesDocument
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set getDocumetByUNID = Nothing
+		Dim tDB As NotesDatabase
+		Set tDB = Me.getDatabase(dbServer, dbFilePath)
+		If Not Me.checkValue(tDB) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не удалось получить базу: } & dbServer & {!!} & dbFilePath & {.}
+		End If 
+		Set getDocumetByUNID = getDocumetByUNIDInDB(tDB, UNID)
+	End Function
+	
+		%REM
+		Comment: Получение документа по UNID
+	%END REM
+	Function getDocumetByUNIDInDB(database As NotesDatabase, UNID As String) As NotesDocument
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set getDocumetByUNIDInDB = Nothing
+		If Not Me.checkValue(UNID) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'UNID' пуст!}
+		End If 
+		If Not Me.checkValue(database) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
+		End If
+		Dim tDoc As NotesDocument
+		On Error Resume Next
+		Set tDoc = database.Getdocumentbyunid(UNID)
+		On Error GoTo errh
+		If Not Me.checkDocument(tDoc) Then 
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не удалось получить документ в базе } & database.Server & {!!} & database.Filepath & { по UNID } & UNID
+		End If
+		Set getDocumetByUNIDInDB = tDoc
+	End Function
+	
+	%REM
+		Comment: Проверка на наличе прав создавать документы в текущей базе данных
+	%END REM
+	Function canCreateDocuments As Boolean
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+
+		canCreateDocuments = Me.canCreateDocumentsExt(Me.getCurrentDatabase(), Me.getNotesSession.Username)
+	End Function
+	
+	%REM
+		Comment: Проверка на наличе прав создавать документы в базе
+	%END REM
+	Function canCreateDocumentsExt(database As NotesDatabase, userName As String) As Boolean
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If Not me.checkValue(userName) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'userName' пуст!}
+		End If
+		If Not me.checkValue(database) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
+		End If
+		canCreateDocumentsExt = (database.Queryaccessprivileges(userName) And DBACL_CREATE_DOCUMENTS)
+	End Function
+	
+	%REM
+		Comment: Проверка на наличе прав удалять документы в текущей базе данных
+	%END REM
+	Function canDeleteDocuments As Boolean
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+
+		canDeleteDocuments = Me.canDeleteDocumentsExt(Me.getCurrentDatabase(), Me.getNotesSession.Username)
+	End Function
+	
+	%REM
+		Comment: Проверка на наличе прав удалять документы в базе.
+	%END REM
+	Function canDeleteDocumentsExt(database As NotesDatabase, userName As String) As Boolean
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If Not me.checkValue(userName) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'userName' пуст!}
+		End If
+		If Not me.checkValue(database) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
+		End If
+		canDeleteDocumentsExt = (database.Queryaccessprivileges(userName) And DBACL_DELETE_DOCUMENTS)
+	End Function
+	
+	%REM
+		Comment: Возвращает массив значений из документов коллекции по указанному имени поля.
+	%END REM
+	Function getValuesByDocCollection(collection As NotesDocumentCollection, itemName As String) As Variant
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		ReDim tRes(0) As Variant
+		Dim Ind As Integer
+		Ind = 0
+		getValuesByDocCollection = tRes
+
+		If Not me.checkValue(collection) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'collection' пуст!}
+		End If
+		If Not me.checkValue(itemName) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'itemName' пуст!}
+		End If
+		
+		If collection.Count > 0 Then
+			Dim tDoc As NotesDocument 
+			Set tDoc = collection.Getfirstdocument()
+			While Not tDoc Is Nothing
+				If Me.checkDocument(tDoc) Then
+					ReDim Preserve tRes(UBound(tRes) + UBound(tDoc.Getitemvalue(itemName)) + 1)  As Variant
+					ForAll V In tDoc.Getitemvalue(itemName)
+						If IsObject(V) Then Set tRes(Ind) = V Else tRes(Ind) = V
+						Ind = Ind + 1
+					End ForAll
+				End If
+				Set tDoc = COLLECTION.Getnextdocument(tDoc)
+			Wend
+		End If		
+		getValuesByDocCollection = tRes
+		Erase tRes
+	End Function
+	
+	%REM
+		Comment: Возвращает массив UNID.
+	%END REM
+	Function getUNIDsByDocCollection(collection As NotesDocumentCollection) As Variant
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		ReDim tRes(0) As Variant
+		Dim Ind As Integer
+		Ind = 0
+		getUNIDsByDocCollection = tRes
+
+		If Not me.checkValue(collection) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'collection' пуст!}
+		End If
+		
+		If collection.Count > 0 Then
+			Dim tDoc As NotesDocument 
+			Set tDoc = collection.Getfirstdocument()
+			While Not tDoc Is Nothing
+				If Me.checkDocument(tDoc) Then
+					ReDim Preserve tRes(UBound(tRes) + 1)  As Variant
+					tRes(Ind) = tDoc.Universalid
+					Ind = Ind + 1
+				End If
+				Set tDoc = COLLECTION.Getnextdocument(tDoc)
+			Wend
+		End If		
+		getUNIDsByDocCollection = tRes
+		Erase tRes
+	End Function
+	
+	%REM
+		Comment: Возвращает все взаимосвязи в коллекции
+	%END REM
+	Function getDocumentResponses(doc As Variant) As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+
+		If Me.checkDocument(doc) Then
+			Dim tList List As String
+			Set getDocumentResponses = Me.getDocumentResponsesExt(doc, tList, doc.Universalid)
+			Erase tList
+		Else
+			Set getDocumentResponses = Nothing
+		End If
+	End Function
+	
+	%REM
+		Comment: Возвращает коллекцию документов их респонзов, а также респонзов респонзов
+	%END REM
+	Function getCoollectionOfDocumentsAndResponses(documents As Variant) As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Dim tCol As NotesDocumentCollection
+		Set tCol = Me.getNotesSession.Currentdatabase.Search({}, Nothing, 0)
+		
+		If Me.checkValue(documents) Then
+			Dim resps As NotesDocumentCollection
+			Dim tDoc As NotesDocument
+			Dim tDoc2 As NotesDocument
+			
+			Select Case TypeName(documents)
+			Case {NOTESDOCUMENT}:
+				Call tCol.Adddocument(documents)
+				Set resps = Me.getDocumentResponses(documents)
+				If Me.checkValue(resps) Then 
+					Set tDoc = resps.Getfirstdocument()
+					While Not tDoc Is Nothing
+						If Me.checkValue(tDoc) Then 
+							If Not tCol.Contains(tDoc.Noteid) Then Call tCol.Adddocument(tDoc)	
+						End If
+						Set tDoc = resps.Getnextdocument(tDoc)
+					Wend
+				End If
+			Case {NOTESDOCUMENTCOLLECTION}:
+				Set tDoc = documents.Getfirstdocument
+				While Not tDoc Is Nothing
+					If Me.checkValue(tDoc) Then 
+						If Not tCol.Contains(tDoc.Noteid) Then Call tCol.Adddocument(tDoc)
+					End If
+					Set resps = Me.getDocumentResponses(tDoc)
+					If Me.checkValue(resps) Then 
+						Set tDoc2 = resps.Getfirstdocument()
+						While Not tDoc2 Is Nothing 
+							If Me.checkValue(tDoc2) Then 
+								If Not tCol.Contains(tDoc2.Noteid) Then Call tCol.Adddocument(tDoc2)	
+							End If
+							Set tDoc2 = resps.Getnextdocument(tDoc2)
+						Wend
+					End If
+					Set tDoc = documents.Getnextdocument(tDoc)
+				Wend
+		End Select
+		End If
+				
+		Set getCoollectionOfDocumentsAndResponses = tCol
+	End Function
+	
+	%REM
+		Comment: Возвращает все взаимосвязи в коллекции
+	%END REM
+	Function getDocumentResponsesExt(doc As Variant, unids List As String, mainDocUnid As String) As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If Me.checkDocument(doc) Then
+			Dim tDB As NotesDatabase
+			Set tDB = doc.Parentdatabase
+			Dim tCol As NotesDocumentCollection
+			Set tCol = tDB.Search({}, Nothing, 0)
+			Dim tRresponses As NotesDocumentCollection
+			Dim tResponse As NotesDocument
+			Set tRresponses = doc.Responses
+			If tRresponses.Count > 0 Then
+				Set tResponse = tRresponses.Getfirstdocument()
+				While Not tResponse Is Nothing
+					If Me.checkDocument(tResponse) Then
+						If tResponse.Universalid <> mainDocUnid And tResponse.Universalid <> doc.Universalid Then 
+							If Not IsElement(unids(tResponse.Universalid)) Then
+								Call tCol.Adddocument(tResponse)
+								unids(tResponse.Universalid) = {}
+								Dim subCol As NotesDocumentCollection
+								Dim subDoc As NotesDocument
+								Set subCol = Me.getDocumentResponsesExt(tResponse, unids, mainDocUnid)
+								If Not subCol Is Nothing Then 
+									Set subDoc = subCol.Getfirstdocument()
+									While Not subDoc Is Nothing 
+										Call tCol.Adddocument(subDoc)
+										Set subDoc = subCol.Getnextdocument(subDoc)
+									Wend
+								End If
+							End If
+						End If
+					End If
+					Set tResponse = tRresponses.Getnextdocument(tResponse)
+				Wend
+			End If
+			Set getDocumentResponsesExt = tCol
+		Else
+			Set getDocumentResponsesExt = Nothing 
+		End If
+	End Function
+	
+	%REM
+		Comment: Создание документа в текущей базе данных и привязка к родителю по необходимости.
+	%END REM
+	Function createDocument(formName As String, parentDocument As NotesDocument) As NotesDocument
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set createDocument = Me.createDocumentInDB(Me.getCurrentDatabase(), formName, parentDocument)
+	End Function
+	
+	%REM
+		Comment: Создание документа
+	%END REM
+	Function createDocumentExt(server As String, filePath As String, formName As String, parentDocument As NotesDocument) As NotesDocument
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		 
+		Set createDocumentExt = Nothing
+		Dim tDB As NotesDatabase
+		Set tDB = Me.getNotesSession.Getdatabase(server, filePath, 0)
+		If tDB Is Nothing Then 
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не удалось открыть базу данных: } & server & {!!} & filePath & {!}
+		End If
+		Set createDocumentExt = Me.createDocumentInDB(tDB, formName, parentDocument)
+	End Function
+	
+	%REM
+		Comment: Создание документа
+	%END REM
+	Function createDocumentInDB(database As NotesDatabase, formName As String, parentDocument As NotesDocument) As NotesDocument
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set createDocumentInDB = Nothing
+		If Not Me.checkValue(formName) Then 
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Наименование формы не может быть пустым!}
+		End If
+		If Not Me.checkValue(database) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
+		End If
+		Set createDocumentInDB = database.CreateDocument
+		Call createDocumentInDB.Replaceitemvalue({Form}, formName)
+		If Not parentDocument Is Nothing Then 
+			Select Case TypeName(parentDocument)
+				Case {NOTESDOCUMENT}:
+					If Me.documentIsNew(parentDocument) Then Call parentDocument.Save(True, False, False)				
+					Call createDocumentInDB.Makeresponse(parentDocument)
+			End Select
+		End If
+	End Function
+	
+	%REM
+		Comment: Устанавливает поле в документах и всех его респонзах и резпонзах респонзов.
+				 Параметр documents может принимать NOTESDOCUMENT или NOTESDOCUMENTCOLLECTION
+	%END REM
+	Sub stampDocumentsAndResponses(documents As Variant, itemName As String, itemValue As Variant)
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Dim tCol As NotesDocumentCollection
+		Set tCol = Me.getCoollectionOfDocumentsAndResponses(documents)
+		
+		If Me.checkValue(tCol) Then Call tCol.Stampall(itemName, itemValue)
+	End Sub
+	
+	%REM
+	Comment: Удаление документов и всех его респознов и ресзпонзов респонзов!
+	%END REM
+	Sub deleteDocuments(documents As Variant)
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+
+		Dim tCol As NotesDocumentCollection
+		Set tCol = Me.getCoollectionOfDocumentsAndResponses(documents)
+		
+		'Удаляем всё разом
+		If tCol.Count > 0 Then Call tCol.Removeall(True)
+	End Sub
+	
+	%REM
+		Comment: Прописывает поля $DELETED__, $DELETED_BY__, $DELETED_DATE__ в документе и всех его респознах и ресзпонзах респонзов!
+	%END REM
+	Sub markAsDeleted(documents As Variant)
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Dim tCol As NotesDocumentCollection
+		Set tCol = Me.getCoollectionOfDocumentsAndResponses(documents)
+		
+		If Me.checkValue(tCol) Then 
+			Dim tDoc As NotesDocument
+			Set tDoc = me.getCurrentDatabase().Createdocument()
+			Call tDoc.Replaceitemvalue({$DELETED__}, {})
+			Call tDoc.Replaceitemvalue({$DELETED_BY__}, Me.getNotesSession.Username)
+			Call tDoc.Replaceitemvalue({$DELETED_DATE__}, Now)
+			Call tCol.Stampallmulti(tDoc)	
+		End If
+	End Sub
+	
+	%REM
+		Comment: Удаляет поля $DELETED__, $DELETED_BY__, $DELETED_DATE__ в документе и всех его респознах и ресзпонзах респонзов!
+	%END REM
+	Sub unMarkAsDeleted(documents As Variant)
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+
+		Dim tCol As NotesDocumentCollection
+		Set tCol = Me.getCoollectionOfDocumentsAndResponses(documents)
+		
+		If Me.checkValue(tCol) Then
+			Dim tDoc As NotesDocument
+			Set tDoc = tCol.Getfirstdocument()
+			While Not tDoc Is Nothing 
+				Call tDoc.Removeitem({$DELETED__})
+				Call tDoc.Removeitem({$DELETED_BY__})
+				Call tDoc.Removeitem({$DELETED_DATE__})
+				Call tDoc.Save(True, False, True)
+				Set tDoc = tCol.Getnextdocument(tDoc)
+			Wend
+		End If
+	End Sub
+	
+	%REM
+		Comment: Проверка на то что документ отмечен как удаленный
+	%END REM
+	Function documentIsMarkedAsDeleted(document As NotesDocument) As Boolean
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		documentIsMarkedAsDeleted = document.Hasitem({$DELETED__})
+	End Function
+	
+	%REM
+		Comment: Проверяет наличие документа по представлению!
+				 Отрабатывает NotesView.Getalldocumentsbykey. 
+				 Если mainDoc = Nothing и полученная коллекция не пуста то вернет True!
+				 Если mainDoc <> Nothing то в случае обнаружения этого mainDoc в коллекции вернет True!
+	%END REM
+	Function documentHasDublicate(dbServer As String, dbFilePath As String, viewName As String, var As Variant, сompleteCoincidence As Boolean, mainDoc As NotesDocument) As Boolean
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		documentHasDublicate = False
+		Dim tDB As NotesDatabase
+		Set tDB = Me.getDatabase(dbServer, dbFilePath)
+		If Not Me.checkValue(tDB) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не удалось получить базу: } & dbServer & {!!} & dbFilePath & {.}
+		End If
+		documentHasDublicate = Me.documentHasDublicateInDB(tDB, viewName, var, сompleteCoincidence, mainDoc)
+	End Function
+	
+	%REM
+		Comment: Проверяет наличие документа по представлению!
+				 Отрабатывает NotesView.Getalldocumentsbykey. 
+				 Если mainDoc = Nothing и полученная коллекция не пуста то вернет True!
+				 Если mainDoc <> Nothing то в случае обнаружения этого mainDoc в коллекции вернет True!
+	%END REM
+	Function documentHasDublicateInDB(database As NotesDatabase, viewName As String, var As Variant, сompleteCoincidence As Boolean, mainDoc As NotesDocument) As Boolean
+		Dim errorFlag As Boolean
+errh: If me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		documentHasDublicateInDB = False
+		If viewName = {} Then Exit Function
+		If IsObject(var) Then Exit Function
+		If Not me.checkValue(database) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
+		End If
+		Dim tCol As NotesDocumentCollection
+		Set tCol = Me.getDocumentsByViewInDB(database, viewName, var, сompleteCoincidence)
+		If Not MainDoc Is Nothing Then
+			If tCol.Count = 1 Then 
+				If MainDoc.UniversalID <> tCol.Getfirstdocument().Universalid Then documentHasDublicateInDB = True 
+			ElseIf tCol.Count > 1 Then
+				documentHasDublicateInDB = True
+			End If
+		Else
+			If tCol.Count > 0 Then documentHasDublicateInDB = True
+		End If 
+	End Function
+	
+	%REM
+		Comment: Проверка что документ был изменен.
+				 Для корректной работы нужно использовать представления отсортированное по UNIVERSALID.
+	%END REM
+	Function documentIsModyfied(dbServer As String, dbFilePath As String, viewName As String, doc As NotesDocument) As Boolean
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+
+		documentIsModyfied = False
+		Dim tDB As NotesDatabase
+		Set tDB = Me.getDatabase(dbServer, dbFilePath)
+		If Not Me.checkValue(tDB) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не удалось получить базу: } & dbServer & {!!} & dbFilePath & {.}
+		End If
+		documentIsModyfied = Me.documentIsModyfiedInDB(tDB, Viewname, Doc)
+	End Function
+	
+	%REM
+		Comment: Проверка что документ был изменен.
+				 Для корректной работы нужно использовать представления отсортированное по UNIVERSALID.
+	%END REM
+	Function documentIsModyfiedInDB(database As NotesDatabase, viewName As String, doc As NotesDocument) As Boolean
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+
+		documentIsModyfiedInDB = False
+		If doc Is Nothing Then Exit Function
+		If Not me.checkValue(database) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент 'database' пуст!}
+		End If
+		Dim tCol As NotesDocumentCollection
+		Set tCol = Me.getDocumentsByViewInDB(database, viewName, doc.Universalid, True)
+		If tCol.Count > 0 Then
+			If tCol.Contains(doc) Then 
+				Dim tDoc As NotesDocument
+				Set tDoc = tCol.Getdocument(doc)
+				If tDoc.Lastmodified <> Doc.Lastmodified Then documentIsModyfiedInDB = True
+			End If
+		End If
+	End Function
+	
+	%REM
+		Comment: Необходимо для обработки ошибок.
+	%END REM
+	Function isError(errorFlag As Boolean) As Boolean
+		If errorFlag = False Then
+			errorFlag = True
+			Exit Function
+		End If
+		isError = True
+	End Function
+	
+	%REM
+		Comment: Создает документ в mail.box для отправки.
+	%END REM
+	Function createMail(body As Variant, subject As Variant, sendto As Variant) As NotesDocument
+		Dim errorFlag As Boolean
+errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set createMail = Me.createMailExt(body, subject, sendto, {}, {})
+	End Function
+	
+	%REM
+		Comment: Создает документ в mail.box для отправки.
+	%END REM
+	Function createMailExt(body As Variant, subject As Variant, sendTo As Variant, copyTo As Variant, blindCopy As Variant) As NotesDocument
+		Dim errorFlag As Boolean
+errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Dim tBox As NotesDatabase 
+		Dim tDoc As NotesDocument
+		Dim tRTIitem As NotesRichTextItem
+		
+		Set tBox = Me.getDatabase(CORE.getCurrentDatabase().Server, {Mail.box})
+		
+		If Not tBox.IsOpen Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5000, {Ошибка при записи сообщения в Mail.box}
+		End If 
+		
+		Set tDoc=tBox.createdocument
+		
+		Call tDoc.ReplaceItemValue({Form}, {Memo})
+		Call tDoc.ReplaceItemValue({From}, CORE.getNotesSession.Username)
+		Call tDoc.ReplaceItemValue({Subject}, subject)
+		
+		Call tDoc.ReplaceItemValue({SendTo}, sendTo)	
+		Call tDoc.ReplaceItemValue({SendTo}, Evaluate({@Unique(@Trim(SendTo))}, tDoc))
+		
+		Call tDoc.ReplaceItemValue({CopyTo}, copyTo)	
+		Call tDoc.ReplaceItemValue({CopyTo}, Evaluate({@Unique(@Trim(CopyTo))}, tDoc))
+		
+		Call tDoc.ReplaceItemValue({BlindCopyTo}, blindCopy)	
+		Call tDoc.ReplaceItemValue({BlindCopyTo}, Evaluate({@Unique(@Trim(BlindCopyTo))}, tDoc))
+		
+		Call tDoc.ReplaceItemValue({PostedDate}, Now)
+		
+		Call tDoc.ReplaceItemValue({Recipients}, Evaluate({@Unique(@Trim(SendTo:CopyTo:BlindCopyTo))}, tDoc))	
+		
+		If Not CORE.checkValue(tDoc.getItemValue({Recipients})) Then Exit Function
+		
+		Set tRTIitem = New NotesRichTextItem (tDoc, "Body")
+		If TypeName(body) = "NOTESRICHTEXTITEM" Then Call tRTIitem.AppendRTItem (body) Else Call tRTIitem.AppendText (body)
+		Set createMailExt = tDoc
+	End Function
+End Class
+Sub Initialize	
+	%REM
+		Инициируем библиотеку создавая экземпляр класса Core__!
+	%END REM
+	If CORE Is Nothing Then Set CORE = New Core__
+End Sub
+Sub Terminate
+	%REM
+		Уничтожаем объект CORE если он был создан!
+	%END REM
+	If Not CORE Is Nothing Then Delete CORE
+End Sub
