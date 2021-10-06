@@ -1,0 +1,248 @@
+%REM
+	Library 'LS_CORE_UI__'
+	Comment: Библиотека содержит 1 клас Core_UI__ с 1 перемменюу CORE_UI содержащую экземпляр класса Core_UI__!
+%END REM
+Option Public
+Option Declare
+Use {LS_CORE__}
+Private Const DESIGN_ELEMENT = {LS_UI_CORE__}
+
+%REM
+	Эта переменная будет содержать функциональный класс!
+%END REM
+Public core_ui As Core_UI__
+%REM
+	Comment: Подобие функционального класса на уровне UI!
+%END REM
+Class Core_UI__ As Core__	
+	%REM
+		UI WorkSpace
+	%END REM
+	Private NOTE_UI_WORKSPACE As NotesUIWorkspace 
+	
+	%REM
+		Переменная от которой зависит режим получения документов в представлении. 
+		Если True то необходимо устанавливать галку на документе. Если False то достаточно выделения.
+		По умолчанию = False
+	%END REM
+	Private LABEL_REQUIRED As Boolean
+	
+	%REM
+		Comment: Получаем NotesUIWorkspace. Если она не инициирована то делаем это!
+	%END REM
+	Function getNotesUIWorkspace As NotesUIWorkspace
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If Me.NOTE_UI_WORKSPACE Is Nothing Then Set Me.NOTE_UI_WORKSPACE = New NotesUIWorkspace
+		Set getNotesUIWorkspace = Me.NOTE_UI_WORKSPACE
+	End Function
+	
+	%REM
+		Comment: Изменяем режим работы получения документов в представлении
+	%END REM
+	Property Set setLabelRequiredMode As Boolean
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Me.LABEL_REQUIRED = setLabelRequiredMode
+	End Property
+	
+	%REM
+		Comment: Выбираем документы серверов.
+	%END REM
+	Function selectServerDocuments(multySelect As Boolean) As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set selectServerDocuments = nothing
+		
+		Dim tNamesDB As NotesDatabase
+		ReDim tNamesDBs(0) As NotesDatabase
+		ReDim tNamesDBsFFP(0) As String
+		Dim tServerName As NotesName
+		Dim tIndex As Integer
+		tIndex = 0
+		ForAll tNames In core.getNotessession.Addressbooks
+			If tNames.Ispublicaddressbook Then
+				If tIndex > 0 Then
+					ReDim Preserve tNamesDBs(tIndex) As NotesDatabase
+					ReDim Preserve tNamesDBsNames(tIndex) As String
+				End If
+				Set tNamesDBs(tIndex) = tNames
+				Set tServerName = core.getNotessession.Createname(tNames.Server)
+				tNamesDBsFFP(tIndex) = tServerName.Abbreviated & {!!} & tNames.FilePath & {}
+				tIndex = tIndex + 1
+			End If
+		End ForAll
+		
+		If UBound(tNamesDBs) > 0 Then
+			Dim tName As String
+			tName = core_ui.getnotesuiworkspace.Prompt(PROMPT_OKCANCELLIST, {Выбор адресной книги}, {Укажите адресную книгу}, {}, tNamesDBsFFP)
+			If tName <> {} Then Set tNamesDB = core.getNotessession.Getdatabase(StrLeft(tName, {!!}), StrRight(tName, {!!}), False)
+		Else
+			If Not tNamesDBs(0) Is Nothing Then Set tNamesDB = tNamesDBs(0)	
+		End If
+		
+		If Not tNamesDB Is Nothing Then Set selectServerDocuments = me.selectDocumentsByViewInDBExt(tNamesDB, {Servers}, multySelect, {Выберите серверы}, {Выберите серверы}, {})
+	End Function
+	
+	%REM
+		Comment: Выбор базы данных
+	%END REM
+	Function selectDatabase As NotesDatabase
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set selectDatabase = Nothing
+		Dim tDB As Variant
+		tDB = Me.getNotesUIWorkspace.Prompt(13, {Выбор базы}, {Выберите базу})
+		If IsEmpty(tDB) Then Exit Function
+		Set selectDatabase = Me.getDatabase(tDb(0), tDb(1))
+		Erase tDB
+	End Function
+	
+	%REM
+		Comment: Выбор представления в базе
+	%END REM
+	Function selectViewInDatabase(database As NotesDatabase) As String
+		Dim errorFlag As Boolean
+errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If database Is Nothing Then 
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент "database" пуст!}
+		End If
+		
+		Dim views As Variant
+		views = {"}
+		ForAll v In database.Views
+			If InStr(v.Name, { | }) Then views = views & {":"} & StrLeft(v.Name, { | }) Else views = views & {":"} & v.Name
+		End ForAll
+		views = views & {"}
+		views = Replace(views, {\}, {\\})
+		
+		views = Evaluate({@Sort(} & views & {; [ASCENDING])})
+		selectViewInDatabase = CORE_UI.getNotesUIWorkspace.Prompt(PROMPT_OKCANCELLIST, {Укажите представление}, {Укажите представление}, {}, views)
+		If IsEmpty(selectViewInDatabase) Then selectViewInDatabase = {}
+	End Function
+	
+	%REM
+		Comment: Выбор документов
+	%END REM
+	Function selectDocumentsByView(dbServer As String, dbFilePath As String, viewName As String, multySelect As Boolean) As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call Me.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set selectDocumentsByView = Me.selectDocumentsByViewExt(dbServer, dbFilePath, viewName, multySelect, {Выбор документов}, {Выберите документы}, {})
+	End Function
+		
+	%REM
+		Comment: Выбор документов
+	%END REM
+	Function selectDocumentsByViewInDB(database As NotesDatabase, viewName As String, multySelect As Boolean) As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call Me.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set selectDocumentsByViewInDB = Me.selectDocumentsByViewInDBExt(database, viewName, multySelect, {Выбор документов}, {Выберите документы}, {})
+	End Function
+	
+	%REM
+		Comment: Выбор документов с большим количеством параметров
+	%END REM
+	Function selectDocumentsByViewExt(dbServer As String, dbFilePath As String, viewName As String, multySelect As Boolean, title As String, prompt As String, category As String) As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set selectDocumentsByViewExt = Nothing
+		Dim tDB As NotesDatabase
+		Set tDB = Me.getDatabase(dbServer, dbFilePath)
+		If Not Me.checkValue(tDB) Then
+			If Me.checkValue(dbServer) Then
+				If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не удалось получить базу: } & dbServer & {!!} & dbFilePath & {!}	
+			Else
+				If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не удалось получить базу: } & dbFilePath & {!}
+			End If
+		End If 
+		Set selectDocumentsByViewExt = Me.selectDocumentsByViewInDBExt(tDB, viewName, multySelect, title, prompt, category)
+	End Function
+	
+	%REM
+		Comment: Выбор документов с большим количеством параметров
+	%END REM
+	Function selectDocumentsByViewInDBExt(database As NotesDatabase, viewName As String, multySelect As Boolean, title As String, prompt As String, category As String) As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set selectDocumentsByViewInDBExt = Nothing
+		If Not Me.checkValue(viewName) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не указано представление для выбора документов.}	
+		End If
+		If Not Me.checkValue(database) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Аргумент "database" пуст!}
+		End If 
+		Dim tView As NotesView
+		Set tView = database.GetView(viewName)
+		If Not Me.checkValue(tView) Then
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {Не найдено представление '} & viewName & {' в базе } & database.Server & {!!} & database.FilePath & {.}	
+		End If
+		Set selectDocumentsByViewInDBExt = Me.getNotesUIWorkspace.Picklistcollection(PICKLIST_CUSTOM, multySelect, database.Server, database.FilePath, viewName, title, prompt, category)
+	End Function
+	
+	%REM
+		Comment: Получаем коллекцию выделенных документов!
+	%END REM
+	Function getSelectedDocuments As NotesDocumentCollection
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If Not Me.getNotesUIWorkspace.CurrentView Is Nothing Then
+			If Me.LABEL_REQUIRED Then 
+				Set getSelectedDocuments = Me.getNotesUIWorkspace.CurrentView.Documents '(Работает только если установить галку в представлении)	
+			Else
+				Set getSelectedDocuments = Me.getNotesUIWorkspace.CurrentDatabase.Database.UnprocessedDocuments '(А тут ставить галочку не обязательно)				
+			End If
+		Else
+			Set getSelectedDocuments = Me.getNotesSession.Currentdatabase.Search({}, Nothing, 0)
+			If Not Me.getNotesUIWorkspace.CurrentDocument Is Nothing Then Call getSelectedDocuments.Adddocument(Me.getNotesUIWorkspace.CurrentDocument.Document)
+		End If
+	End Function
+	
+	%REM
+		Comment: Открывает документ.
+	%END REM
+	Sub openDocument(doc As NotesDocument, editMode As Boolean)
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If Me.checkDocument(doc) Then Call Me.getNotesUIWorkspace.Editdocument(editMode, doc)	
+	End Sub
+	
+	%REM
+		Comment: Открывает все документы из коллекции.
+	%END REM
+	Sub openDocuments(col As NotesDocumentCollection, editMode As Boolean)
+		Dim errorFlag As Boolean
+errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Dim tDoc As NotesDocument
+		If col.Count > 0 Then 
+			Set tDoc = col.Getfirstdocument()
+			While Not tDoc Is Nothing 
+				Call Me.getNotesUIWorkspace.Editdocument(editMode, tDoc)	
+				Set tDoc = col.Getnextdocument(tDoc)
+			Wend
+		End If
+	End Sub
+End Class
+%REM
+	Инициируем библиотеку создавая экземпляр класса Core_UI__!
+%END REM
+Sub Initialize
+	If CORE_UI Is Nothing Then Set CORE_UI = New Core_UI__
+End Sub
+%REM
+	Уничтожаем объект CORE_UI если он был создан!
+%END REM
+Sub Terminate
+	If Not CORE_UI Is Nothing Then Delete CORE_UI
+End Sub
