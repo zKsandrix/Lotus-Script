@@ -9,7 +9,7 @@ Design Element, Class, Type:
 	Comment:
 %END REM
 
-Function:
+Function, Property Get:
 %REM
 	Comment:
 		
@@ -27,19 +27,9 @@ Sub, Property Set:
 		
 %END REM
 
-Property Get:
-%REM
-	Comment:
-
-	Parameters:
-		
-	Return:
-		
-%END REM
-
 LotusScript Editor -> Code Templates:
 Design Element:
-Private Const DESIGN_ELEMENT = {}
+'Private Const DESIGN_ELEMENT = {}
 
 Sub, Function, Property Get, Property Set:
 	Dim errorFlag As Boolean
