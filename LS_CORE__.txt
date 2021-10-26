@@ -1,15 +1,4 @@
 %REM
-	Comment: Библиотека содержит 1 класс core__ и 1 переменную core содержащую экземпляр класса core__!
-%END REM
-Option Public
-Option Declare
-Private Const DESIGN_ELEMENT = {LS_CORE__}
-
-%REM
-	Comment: Эта переменная будет содержать экземпляр класса core__!
-%END REM
-Public core As core__
-%REM
 	Comment: Сам класс!
 %END REM
 Public Class core__
@@ -185,7 +174,7 @@ errh: If me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {TypeName(document) <> NOTESDOCUMENT and <> NOTESUIDOCUMENT!} 
 		End If
 		If document Is Nothing Then 					'Is Nothing
-			If Me.getNoErrorMode Then Exit Function Else Error 5001, {document.Isvalid = False!}
+			If Me.getNoErrorMode Then Exit Function Else Error 5001, {document Is Nothing = True!}
 		End If
 		If Not document.Isvalid Then					'Документ не валиден
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {document.Isvalid = False!}
@@ -1137,21 +1126,3 @@ errh: If core.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(
 		Set createMailExt = tDoc
 	End Function
 End Class
-%REM
-	Comment:
-		Инициируем библиотеку создавая экземпляр класса core__!
-	Parameters:
-		-
-%END REM
-Sub Initialize
-	If core Is Nothing Then Set core = New core__
-End Sub
-%REM
-	Comment:
-		Уничтожаем объект core если он был создан!
-	Parameters:
-		-
-%END REM
-Sub Terminate
-	If Not core Is Nothing Then Delete core
-End Sub

@@ -1,6 +1,5 @@
 %REM
-	Library 'LS_CORE_UI__'
-	Comment: Библиотека содержит 1 клас Core_UI__ с 1 перемменюу CORE_UI содержащую экземпляр класса Core_UI__!
+	Comment: Библиотека содержит 1 клас core_ui__ и 1 перемменную core_ui содержащую экземпляр класса core_ui__!
 %END REM
 Option Public
 Option Declare
@@ -28,7 +27,12 @@ Class Core_UI__ As Core__
 	Private LABEL_REQUIRED As Boolean
 	
 	%REM
-		Comment: Получаем NotesUIWorkspace. Если она не инициирована то делаем это!
+		Comment:
+			Получение экземпляра NotesUIWorkspace.
+		Parameters:
+			-
+		Return:
+			NotesUIWorkspace
 	%END REM
 	Function getNotesUIWorkspace As NotesUIWorkspace
 		Dim errorFlag As Boolean
@@ -41,6 +45,12 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	%REM
 		Comment: Изменяем режим работы получения документов в представлении
 	%END REM
+	%REM
+		Comment:
+			Измение режима работы получения документов в представлении.
+		Parameters:
+			-
+	%END REM
 	Property Set setLabelRequiredMode As Boolean
 		Dim errorFlag As Boolean
 errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
@@ -49,7 +59,12 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	End Property
 	
 	%REM
-		Comment: Выбираем документы серверов.
+		Comment:
+			Выбор документов серверов
+		Parameters:
+			multySelect - если true, то можно выбрать несколько документов
+		Return:
+			NotesDocumentCollection
 	%END REM
 	Function selectServerDocuments(multySelect As Boolean) As NotesDocumentCollection
 		Dim errorFlag As Boolean
@@ -88,7 +103,12 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	End Function
 	
 	%REM
-		Comment: Выбор базы данных
+		Comment:
+			Выбор базы данных
+		Parameters:
+			-
+		Return:
+			NotesDatabase
 	%END REM
 	Function selectDatabase As NotesDatabase
 		Dim errorFlag As Boolean
@@ -103,7 +123,12 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	End Function
 	
 	%REM
-		Comment: Выбор представления в базе
+		Comment:
+			Выбор представления в базе
+		Parameters:
+			database - база в которой производится выбор представления
+		Return:
+			Название представления. String.
 	%END REM
 	Function selectViewInDatabase(database As NotesDatabase) As String
 		Dim errorFlag As Boolean
@@ -127,7 +152,15 @@ errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(
 	End Function
 	
 	%REM
-		Comment: Выбор документов
+		Comment:
+			Выбор документов
+		Parameters:
+			dbServer - сервер базы
+			dbFilePath - путь к базе
+			viewName - название представления
+			multySelect - множественный выбор
+		Return:
+			NotesDocumentCollection
 	%END REM
 	Function selectDocumentsByView(dbServer As String, dbFilePath As String, viewName As String, multySelect As Boolean) As NotesDocumentCollection
 		Dim errorFlag As Boolean
@@ -137,7 +170,14 @@ errh: If Me.isError(errorFlag) Then Call Me.Error_(DESIGN_ELEMENT, TypeName(Me),
 	End Function
 		
 	%REM
-		Comment: Выбор документов
+		Comment:
+			Выбор документов
+		Parameters:
+			database - база в которой производится выбор документов
+			viewName - название представления
+			multySelect - множественный выбор
+		Return:
+			NotesDocumentCollection
 	%END REM
 	Function selectDocumentsByViewInDB(database As NotesDatabase, viewName As String, multySelect As Boolean) As NotesDocumentCollection
 		Dim errorFlag As Boolean
@@ -147,7 +187,18 @@ errh: If Me.isError(errorFlag) Then Call Me.Error_(DESIGN_ELEMENT, TypeName(Me),
 	End Function
 	
 	%REM
-		Comment: Выбор документов с большим количеством параметров
+		Comment:
+			Выбор документов
+		Parameters:
+			dbServer - сервер базы
+			dbFilePath - путь к базе
+			viewName - название представления
+			multySelect - множественный выбор
+			title - заголовок
+			prompt - текст в диалоге выбора
+			category - категрия в которой производится выбор
+		Return:
+			NotesDocumentCollection
 	%END REM
 	Function selectDocumentsByViewExt(dbServer As String, dbFilePath As String, viewName As String, multySelect As Boolean, title As String, prompt As String, category As String) As NotesDocumentCollection
 		Dim errorFlag As Boolean
@@ -167,7 +218,17 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	End Function
 	
 	%REM
-		Comment: Выбор документов с большим количеством параметров
+		Comment:
+			Выбор документов
+		Parameters:
+			database - база в которой производится выбор документов
+			viewName - название представления
+			multySelect - множественный выбор
+			title - заголовок
+			prompt - текст в диалоге выбора
+			category - категрия в которой производится выбор
+		Return:
+			NotesDocumentCollection
 	%END REM
 	Function selectDocumentsByViewInDBExt(database As NotesDatabase, viewName As String, multySelect As Boolean, title As String, prompt As String, category As String) As NotesDocumentCollection
 		Dim errorFlag As Boolean
@@ -189,7 +250,14 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	End Function
 	
 	%REM
-		Comment: Получаем коллекцию выделенных документов!
+		Comment:
+			Получение коллекции выделенных документов.
+			Если флаг LABEL_REQUIRED = true, то требуется выделить документ галочкой.
+			Если флаг LABEL_REQUIRED = false (по умолчанию), выделение галкой не требуется.
+		Parameters:
+			-
+		Return:
+			NotesDocumentCollection
 	%END REM
 	Function getSelectedDocuments As NotesDocumentCollection
 		Dim errorFlag As Boolean
@@ -208,7 +276,11 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	End Function
 	
 	%REM
-		Comment: Открывает документ.
+		Comment:
+			Открытие документа.
+		Parameters:
+			doc - документ который необходимо открыть.
+			editMode - если true то открытие в режиме редактирования, иначе в режиме чтения
 	%END REM
 	Sub openDocument(doc As NotesDocument, editMode As Boolean)
 		Dim errorFlag As Boolean
@@ -218,7 +290,11 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 	End Sub
 	
 	%REM
-		Comment: Открывает все документы из коллекции.
+		Comment:
+			Открытие документа.
+		Parameters:
+			col - коллекция документов которые необходимо открыть
+			editMode - если true то открытие в режиме редактирования, иначе в режиме чтения
 	%END REM
 	Sub openDocuments(col As NotesDocumentCollection, editMode As Boolean)
 		Dim errorFlag As Boolean
@@ -234,15 +310,17 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 		End If
 	End Sub
 End Class
+
 %REM
 	Инициируем библиотеку создавая экземпляр класса Core_UI__!
 %END REM
 Sub Initialize
-	If CORE_UI Is Nothing Then Set CORE_UI = New Core_UI__
+	If core_ui Is Nothing Then Set core_ui = New Core_UI__
 End Sub
+
 %REM
 	Уничтожаем объект CORE_UI если он был создан!
 %END REM
 Sub Terminate
-	If Not CORE_UI Is Nothing Then Delete CORE_UI
+	If Not core_ui Is Nothing Then Delete core_ui
 End Sub

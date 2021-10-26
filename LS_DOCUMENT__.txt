@@ -1,0 +1,136 @@
+%REM
+	Comment: Библиотека c классом для NotesDocument
+%END REM
+Option Public
+Option Declare
+Use {LS_CORE__}
+Private Const DESIGN_ELEMENT = {LS_DOCUMENT__}
+
+%REM
+	Comment: Класс для документов!
+%END REM
+Class Document
+	Private Document_ As NotesDocument
+	
+	%REM
+		Comment:
+			Констурктор. Передается документ (NOTESUIDOCUMENT или NOTESDOCUMENT). Если передать Nothing, то будет создан новый документ!
+		Parameters:
+			object - NOTESUIDOCUMENT или NOTESDOCUMENT
+			createIfNothing - если true и object is nothing, то будет создан новый, НЕ сохраненный документ.
+	%END REM
+	Sub New(object As Variant, createIfNothing As Boolean)
+		Dim errorFlag As Boolean
+errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If Not IsObject(object) Then Error 5001, {Не корректный тип аргумента "object": } & TypeName(object) & {!}
+		Select Case TypeName(object)
+			Case {NOTESUIDOCUMENT}:
+				Set Me.Document_ = object.Document
+			Case {NOTESDOCUMENT}:
+				Set Me.Document_ = object
+		End Select
+		If Me.Document_ Is Nothing Then
+			If createIfNothing Then
+				Set Me.Document_ = CORE.getCurrentDatabase().Createdocument()
+			Else
+				Error 5001, {Аргумент "object" = Nothing!}
+			End If
+		End If
+	End Sub
+	
+	%REM
+		Comment:
+			Возвращает объект NotesDatabase (NotesDocument.Parentdatabase) текущего документа.
+		Parameters:
+			-
+		Return:
+			NotesDatabase
+	%END REM
+	Property Get getDatabaseOfDocument() As NotesDatabase
+		Dim errorFlag As Boolean
+errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set getDatabaseOfDocument = Me.Document_.Parentdatabase
+	End Property
+	
+	%REM
+		Comment:
+			Возвращает объект NotesDocument текущего документа.
+		Parameters:
+			-
+		Return:
+			NotesDocument
+	%END REM
+	Property Get getDocument() As NotesDocument
+		Dim errorFlag As Boolean
+errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		Set getDocument = Me.Document_
+	End Property
+	
+	%REM
+		Comment:
+			Устанавливает NotesDocument для текущего объекта
+		Parameters:
+			-
+	%END REM
+	Property Set setDocument() As NotesDocument
+		Dim errorFlag As Boolean
+errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		If Not IsObject(setDocument) Then Error 5001, {Не корректный тип аргумента "object": } & TypeName(setDocument) & {!}
+		If setDocument Is Nothing Then Error 5001, {Переданный аргумент = Nothing!}
+		Set Me.Document_ = setDocument
+	End Property
+
+	%REM
+		Comment:
+			Сохранение документа со следующими флагами: 
+				force = true
+				createResponse = false
+				markRead = false
+		Parameters:
+			-
+		Return:
+			Результат сохранения. Boolean
+	%END REM
+	Function save() As Boolean
+		Dim errorFlag As Boolean
+errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		save = Me.saveExt(True, False, False)
+	End Function
+	
+	%REM
+		Comment:
+			Сохранение документа.
+		Parameters:
+			force - см. описание метода в документации.
+			createResponse - см. описание метода в документации.
+			markRead - см. описание метода в документации.
+		Return:
+			Результат сохранения. Boolean
+	%END REM
+	Function saveExt(force As Boolean, createResponse As Boolean, markRead As Boolean) As Boolean
+		Dim errorFlag As Boolean
+errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		saveExt = Me.Document_.Save(force, createResponse, markRead)
+	End Function
+
+	%REM
+		Comment:
+			Получение UniversalID документа
+		Parameters:
+			-
+		Return:
+			Universalid. String
+	%END REM
+	Property Get getUNID() As String
+		Dim errorFlag As Boolean
+errh: If CORE.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
+		
+		getUNID = Me.Document_.Universalid
+	End Property
+End Class
