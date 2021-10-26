@@ -29,7 +29,7 @@ Sub, Property Set:
 
 LotusScript Editor -> Code Templates:
 Design Element:
-'Private Const DESIGN_ELEMENT = {}
+Private Const DESIGN_ELEMENT = {}
 
 Sub, Function, Property Get, Property Set:
 	Dim errorFlag As Boolean
