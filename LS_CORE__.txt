@@ -166,9 +166,9 @@ errh: If me.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(Me
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {IsObject(document) = False!} 
 		End If
 		Dim tDoc As NotesDocument
-		If TypeName(UCase(document)) = {NOTESDOCUMENT} Then
+		If UCase(TypeName(document)) = {NOTESDOCUMENT} Then
 			Set tDoc = document
-		ElseIf TypeName(UCase(document)) = {NOTESUIDOCUMENT} Then
+		ElseIf UCase(TypeName(document)) = {NOTESUIDOCUMENT} Then
 			Set tDoc = document.Document
 		Else											'Передали не документ
 			If Me.getNoErrorMode Then Exit Function Else Error 5001, {TypeName(document) <> NOTESDOCUMENT and <> NOTESUIDOCUMENT!} 
