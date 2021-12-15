@@ -1,4 +1,14 @@
 %REM
+	Comment: Библиотека содержит 1 клас Core__ и 1 переменнюу core содержащую экземпляр класса Core__!
+%END REM
+Option Public
+Option Declare
+Private Const DESIGN_ELEMENT = {LS_CORE__}
+%REM
+	Эта переменная будет содержать экземпляр класса Core__!
+%END REM
+Public core As Core__
+%REM
 	Comment: Сам класс!
 %END REM
 Public Class core__
@@ -1126,3 +1136,15 @@ errh: If core.isError(errorFlag) Then Call core.error_(DESIGN_ELEMENT, TypeName(
 		Set createMailExt = tDoc
 	End Function
 End Class
+Sub Initialize	
+	%REM
+		Инициируем библиотеку создавая экземпляр класса Core__!
+	%END REM
+	If core Is Nothing Then Set core = New Core__
+End Sub
+Sub Terminate
+	%REM
+		Уничтожаем объект CORE если он был создан!
+	%END REM
+	If Not core Is Nothing Then Delete core
+End Sub
