@@ -10,6 +10,7 @@ Private Const DESIGN_ELEMENT = {LS_UI_CORE__}
 	Эта переменная будет содержать функциональный класс!
 %END REM
 Public core_ui As Core_UI__
+
 %REM
 	Comment: Подобие функционального класса на уровне UI!
 %END REM
@@ -70,7 +71,7 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 		Dim errorFlag As Boolean
 errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me), GetThreadInfo(1), {}) Else On Error GoTo errh
 		
-		Set selectServerDocuments = nothing
+		Set selectServerDocuments = Nothing
 		
 		Dim tNamesDB As NotesDatabase
 		ReDim tNamesDBs(0) As NotesDatabase
@@ -99,7 +100,10 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 			If Not tNamesDBs(0) Is Nothing Then Set tNamesDB = tNamesDBs(0)	
 		End If
 		
-		If Not tNamesDB Is Nothing Then Set selectServerDocuments = me.selectDocumentsByViewInDBExt(tNamesDB, {Servers}, multySelect, {Выберите серверы}, {Выберите серверы}, {})
+		If Not tNamesDB Is Nothing Then
+			Set tNamesDB = core.getNotesSession().Getdatabase(tNamesDB.Server, tNamesDB.Filepath, 0)
+			Set selectServerDocuments = me.selectDocumentsByViewInDBExt(tNamesDB, {Servers}, multySelect, {Выберите серверы}, {Выберите серверы}, {})
+		End If
 	End Function
 	
 	%REM
@@ -168,7 +172,7 @@ errh: If Me.isError(errorFlag) Then Call Me.Error_(DESIGN_ELEMENT, TypeName(Me),
 		
 		Set selectDocumentsByView = Me.selectDocumentsByViewExt(dbServer, dbFilePath, viewName, multySelect, {Выбор документов}, {Выберите документы}, {})
 	End Function
-		
+	
 	%REM
 		Comment:
 			Выбор документов
