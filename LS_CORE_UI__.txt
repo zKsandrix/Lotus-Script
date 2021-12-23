@@ -83,7 +83,7 @@ errh: If Me.isError(errorFlag) Then Call CORE.Error_(DESIGN_ELEMENT, TypeName(Me
 			If tNames.Ispublicaddressbook Then
 				If tIndex > 0 Then
 					ReDim Preserve tNamesDBs(tIndex) As NotesDatabase
-					ReDim Preserve tNamesDBsNames(tIndex) As String
+					ReDim Preserve tNamesDBsFFP(tIndex) As String
 				End If
 				Set tNamesDBs(tIndex) = tNames
 				Set tServerName = core.getNotessession.Createname(tNames.Server)
